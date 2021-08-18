@@ -3,7 +3,8 @@ version: '3.9'
 services:
     web:
         build: ./client/web_faceid
-        restart: unless-stopped
+        container_name: web
+        restart: always
         tty: true
         ports:
             - "3000:3000"
@@ -12,8 +13,10 @@ services:
             - /app/node_modules
         networks: 
             - frontend
+            
     mongodb:
         image: mongo
+        container_name: mongo
         restart: always
         command: mongod --auth
         environment:
@@ -28,6 +31,7 @@ services:
 
     server:
         build: ./server
+        container_name: server
         ports:
             - "80:5000"
         volumes:
