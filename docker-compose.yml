@@ -31,9 +31,9 @@ services:
         ports:
             - "80:5000"
         volumes:
-            - ./server:/app
-        environment: 
-            FLASK_ENV: development
+            - ./server:/app      
+        depends_on: 
+            - mongodb
         networks:
             - backend
             - frontend
