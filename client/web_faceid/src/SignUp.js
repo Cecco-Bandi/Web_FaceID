@@ -75,9 +75,27 @@ export default function SignUp({ context, setContext }) {
 					</Typography>
 				</Box>
 				<Box className={classes.box} mb={2}>
-					<Webcam webcam={webcam} setWebcam={setWebcam} setSignUpMessage={setSignUpMessage} context={context} setContext={setContext} className={classes.box} />
+					<Webcam webcam={webcam} setWebcam={setWebcam} setSignUpMessage={setSignUpMessage} context={context} className={classes.box} />
 				</Box>
-				<form id='form' className={classes.form} noValidate>
+				<form
+					id='form'
+					className={classes.form}
+					noValidate
+					onSubmit={(e) => {
+						e.preventDefault();
+						let inputs = document.querySelectorAll('input');
+						const inputsArr = Array.from(inputs);
+						const checkEmpty = (input) => input.value.length !== 0;
+						const uniform = inputsArr.every(checkEmpty);
+						if (uniform) {
+							inputs.forEach((input) => (input.disabled = true));
+							setSignUpMessage('Point the camera to your face');
+							setWebcam(true);
+						} else {
+							setSignUpMessage('Some fields are empty');
+						}
+					}}
+				>
 					<Grid container spacing={2}>
 						<Grid item xs={12} sm={6}>
 							<TextField autoComplete='fname' name='firstName' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus />
@@ -92,24 +110,7 @@ export default function SignUp({ context, setContext }) {
 							<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' />
 						</Grid>
 					</Grid>
-					<Button
-						fullWidth
-						variant='contained'
-						color='primary'
-						className={classes.submit}
-						onClick={() => {
-							let inputs = document.querySelectorAll('input');
-							inputs = Array.from(inputs);
-							const checkEmpty = (input) => input.value.length !== 0;
-							const uniform = inputs.every(checkEmpty);
-							if (uniform) {
-								setSignUpMessage('Point the camera to your face');
-								setWebcam(true);
-							} else {
-								setSignUpMessage('Some fields are empty');
-							}
-						}}
-					>
+					<Button fullWidth variant='contained' color='primary' className={classes.submit} type='submit'>
 						Sign Up
 					</Button>
 					<Grid container justifyContent='flex-end'>

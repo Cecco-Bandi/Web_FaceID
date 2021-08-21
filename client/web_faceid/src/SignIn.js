@@ -55,12 +55,12 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function SignIn({ context, setContext }) {
+export default function SignIn({ context, setContext, signInMessage, setSignInMessage, signUpMessage, setSignUpMessage }) {
 	useEffect(() => {
 		setContext('SignIn');
 	});
 	let [webcam, setWebcam] = useState(false);
-	let [signInMessage, setSignInMessage] = useState('Fill in your email');
+	// let [signInMessage, setSignInMessage] = useState('Fill in your email');
 	const classes = useStyles();
 
 	return (
@@ -77,27 +77,28 @@ export default function SignIn({ context, setContext }) {
 				</Box>
 
 				<Box className={classes.box} my={2}>
-					<Webcam webcam={webcam} setWebcam={setWebcam} setSignInMessage={setSignInMessage} context={context} setContext={setContext} className={classes.box} />
+					<Webcam webcam={webcam} setWebcam={setWebcam} setSignInMessage={setSignInMessage} context={context} className={classes.box} />
 				</Box>
-				<form className={classes.form} noValidate>
+				<form
+					id='signInForm'
+					className={classes.form}
+					noValidate
+					onSubmit={(e) => {
+						e.preventDefault();
+						let email = document.querySelector('#email');
+						if (email.value.length !== 0) {
+							email.disabled = true;
+							setWebcam(true);
+							setSignInMessage('Point the camera to your face');
+						} else {
+							setSignInMessage("Email field can't be empty");
+						}
+					}}
+				>
 					<Box>
 						<TextField variant='outlined' margin='normal' fullWidth id='email' label='Email Address' name='email' autoComplete='email' autoFocus />
 					</Box>
-					<Button
-						fullWidth
-						variant='contained'
-						color='primary'
-						className={classes.submit}
-						onClick={() => {
-							let email = document.querySelector('#email');
-							if (email.value.length !== 0) {
-								setWebcam(true);
-								setSignInMessage('Point the camera to your face');
-							} else {
-								setSignInMessage("Email field can't be empty");
-							}
-						}}
-					>
+					<Button type='submit' fullWidth variant='contained' color='primary' className={classes.submit}>
 						Authenticate with Face
 					</Button>
 					<Grid container>

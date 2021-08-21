@@ -9,58 +9,46 @@ const useStyles = makeStyles(() => ({
 	},
 }));
 
-const Webcam = ({ webcam, setWebcam, setSignInMessage, setSignUpMessage, context, setContext }) => {
+const Webcam = ({ webcam, setWebcam, setSignInMessage, setSignUpMessage, context }) => {
 	const classes = useStyles();
-	async function startVideo() {
-		let stream = null;
-		try {
-			stream = await navigator.mediaDevices.getUserMedia({ video: true });
-			let video = document.querySelector('.video_container');
-			video.srcObject = stream;
-			setTimeout(() => {
-				// let imageCapture = new ImageCapture(video.srcObject.getVideoTracks()[0]);
-				// let frame = imageCapture.grabFrame();
-				// console.log(frame);
-				captureFrame();
-				stopVideo();
-				if (context === 'SignIn') {
-					setSignInMessage('Attempting to login...');
-				} else if (context === 'SignUp') {
-					setSignUpMessage('Creating the account...');
-				}
-			}, 3000);
-		} catch (err) {
-			console.log(err);
-		}
-	}
-	const stopVideo = () => {
-		if (webcam) {
-			let video = document.querySelector('.video_container');
-			let stream = video.srcObject.getVideoTracks()[0];
-			stream.stop();
-			video.srcObject = null;
-			setWebcam(false);
-		}
-	};
-
-	function captureFrame() {
-		var imageCapture;
-		const video = document.querySelector('.video_container');
-		const track = video.srcObject.getVideoTracks()[0];
-		imageCapture = new ImageCapture(track);
-		imageCapture
-			.takePhoto()
-			.then((imageBitMap) => {
-				console.log(imageBitMap);
-			})
-			.catch((err) => console.log(err));
-	}
-
 	useEffect(() => {
 		if (webcam) {
 			startVideo();
 		}
 	});
+
+	const startVideo = () => {
+		let imageCapture;
+		navigator.mediaDevices
+			.getUserMedia({ video: { width: 300, height: 300 } })
+			.then((mediaStream) => {
+				document.querySelector('.video_container').srcObject = mediaStream;
+				const track = mediaStream.getVideoTracks()[0];
+				imageCapture = new ImageCapture(track);
+				setTimeout(() => {
+					imageCapture
+						.grabFrame()
+						.then((imageBitmap) => {
+							createImageBitmap(imageBitmap, { resizeWidth: 32, resizeHeight: 32 })
+								.then((resizedImageBitmap) => {
+									console.log(resizedImageBitmap); //32x32 Image Bitmap ready to send with Axios
+
+									track.stop();
+									track.srcObject = null;
+									setWebcam(false);
+									if (context === 'SignIn') {
+										setSignInMessage('Attempting to login...');
+									} else if (context === 'SignUp') {
+										setSignUpMessage('Creating the account...');
+									}
+								})
+								.catch((err) => console.log(err));
+						})
+						.catch((error) => console.log(error));
+				}, 3000);
+			})
+			.catch((error) => console.log(error));
+	};
 
 	return (
 		<Box className='webcamBox'>
