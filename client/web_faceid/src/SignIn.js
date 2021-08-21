@@ -60,7 +60,6 @@ export default function SignIn({ context, setContext, signInMessage, setSignInMe
 		setContext('SignIn');
 	});
 	let [webcam, setWebcam] = useState(false);
-	// let [signInMessage, setSignInMessage] = useState('Fill in your email');
 	const classes = useStyles();
 
 	return (
