@@ -4,12 +4,13 @@ services:
     web:
         build: ./client
         container_name: web
-        restart: always
-        tty: true
         ports:
             - "3000:3000"
+        restart: always
+        stdin_open: true
+        tty: true
         volumes:
-            - ./client:/user/src/app
+            - ./src:/user/src/app/src
             - /app/node_modules
         networks: 
             - frontend
