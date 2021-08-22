@@ -40,6 +40,9 @@ def get_encr_enc(file) -> str:
     encr_enc = encrypt_enc(enc)
     return encr_enc
 
-def authenticate_user():
-    
-    return
+def authenticate_user(encr_enc: str, encr_enc_db: ndarray) -> bool:
+    str_decr_enc = decrypt_enc(encr_enc)
+    str_decr_enc_db = decrypt_enc(encr_enc_db)
+    decr_enc = string_to_enc(str_decr_enc)
+    decr_enc_db = string_to_enc(str_decr_enc_db)
+    return compare_enc(decr_enc, decr_enc_db)
