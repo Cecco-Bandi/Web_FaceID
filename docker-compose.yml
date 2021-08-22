@@ -17,7 +17,9 @@ services:
     mongodb:
         image: mongo
         container_name: mongo
-        restart: always
+        ports:
+            - "27017:27017"
+        restart: unless-stopped
         command: mongod --auth
         environment:
             MONGO_INITDB_ROOT_USERNAME: "admin"
@@ -39,7 +41,7 @@ services:
         environment:
             MONGODB_HOST: mongodb
             MONGODB_USERNAME: "apiuser"
-            MONGODB_PASSWORD: "apipassword"    
+            MONGODB_PASSWORD: "apipass"
         depends_on: 
             - mongodb
         networks:

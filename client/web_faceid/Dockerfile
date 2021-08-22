@@ -1,13 +1,16 @@
-FROM node:16-alpine3.11
+FROM node:16-alpine
 
 WORKDIR /user/src/app
+# add `/app/node_modules/.bin` to $PATH
+ENV PATH /app/node_modules/.bin:$PATH
 
-COPY ./package.json ./
+# install app dependencies
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install --silent
+RUN npm install react-scripts@3.4.1 -g --silent
 
-RUN npm install
-RUN npm install react-scripts -g
-
-COPY . .
+COPY . ./
 
 EXPOSE 3000
 
