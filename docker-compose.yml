@@ -9,7 +9,7 @@ services:
         ports:
             - "3000:3000"
         volumes:
-            - ./client/web_faceid:/user/src/app
+            - ./client:/user/src/app
             - /app/node_modules
         networks: 
             - frontend
