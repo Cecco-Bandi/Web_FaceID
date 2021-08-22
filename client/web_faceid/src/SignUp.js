@@ -12,6 +12,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Webcam from './Webcam';
 import { useEffect } from 'react';
+const axios = require('axios');
 
 function Copyright() {
 	return (
@@ -55,13 +56,37 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function SignUp({ context, setContext }) {
+export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 	useEffect(() => {
 		setContext('SignUp');
 	});
 	const classes = useStyles();
-	let [webcam, setWebcam] = useState(false);
-	let [signUpMessage, setSignUpMessage] = useState('Please fill in the form');
+	const [webcam, setWebcam] = useState(false);
+	const [signUpMessage, setSignUpMessage] = useState('Please fill in the form');
+	const [formData, setFormData] = useState(new FormData());
+
+	useEffect(() => {
+		if (regFrame !== null) {
+			formData.append('regFrame', regFrame);
+			console.log('frame added to formData:', formData.get('regFrame'));
+			setRegFrame(null);
+
+			//#### TO REMOVE BEFORE DEPLOYING ####
+			console.log('POST data: ');
+			for (let value of formData.values()) {
+				console.log(value);
+			}
+			//#### TO REMOVE BEFORE DEPLOYING ####
+
+			axios.post('http://localhost/register', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+			setFormData(new FormData());
+		}
+	}, [regFrame, setRegFrame, formData]);
+
 	return (
 		<Container component='main' maxWidth='xs'>
 			<CssBaseline />
@@ -75,7 +100,7 @@ export default function SignUp({ context, setContext }) {
 					</Typography>
 				</Box>
 				<Box className={classes.box} mb={2}>
-					<Webcam webcam={webcam} setWebcam={setWebcam} setSignUpMessage={setSignUpMessage} context={context} className={classes.box} />
+					<Webcam webcam={webcam} setWebcam={setWebcam} regFrame={regFrame} setRegFrame={setRegFrame} setSignUpMessage={setSignUpMessage} context={context} className={classes.box} />
 				</Box>
 				<form
 					id='form'
@@ -90,6 +115,11 @@ export default function SignUp({ context, setContext }) {
 						if (uniform) {
 							inputs.forEach((input) => (input.disabled = true));
 							setSignUpMessage('Point the camera to your face');
+							inputs.forEach((input) => {
+								const key = toString(input.name);
+								const value = input.value;
+								formData.append(key, value);
+							});
 							setWebcam(true);
 						} else {
 							setSignUpMessage('Some fields are empty');

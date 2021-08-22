@@ -12,6 +12,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Webcam from './Webcam';
 import { useEffect } from 'react';
+// import { useMemo } from 'react';
+const axios = require('axios');
 
 function Copyright() {
 	return (
@@ -55,13 +57,33 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function SignIn({ context, setContext, signInMessage, setSignInMessage, signUpMessage, setSignUpMessage }) {
+export default function SignIn({ loginFrame, setLoginFrame, context, setContext, signInMessage, setSignInMessage, signUpMessage, setSignUpMessage }) {
 	useEffect(() => {
 		setContext('SignIn');
 	});
-	let [webcam, setWebcam] = useState(false);
+	const [webcam, setWebcam] = useState(false);
+	const [formData, setFormData] = useState(new FormData());
+
 	const classes = useStyles();
 
+	useEffect(() => {
+		if (loginFrame !== null) {
+			formData.append('frame', loginFrame);
+			setLoginFrame(null);
+			//#### TO REMOVE BEFORE DEPLOYING ####
+			console.log('POST data: ');
+			for (let value of formData.values()) {
+				console.log(value);
+			}
+			//#### TO REMOVE BEFORE DEPLOYING ####
+			axios.post('http://localhost/login', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+			setFormData(new FormData());
+		}
+	}, [loginFrame, setLoginFrame, formData]);
 	return (
 		<Container component='main' maxWidth='xs'>
 			<CssBaseline />
@@ -76,7 +98,7 @@ export default function SignIn({ context, setContext, signInMessage, setSignInMe
 				</Box>
 
 				<Box className={classes.box} my={2}>
-					<Webcam webcam={webcam} setWebcam={setWebcam} setSignInMessage={setSignInMessage} context={context} className={classes.box} />
+					<Webcam webcam={webcam} setWebcam={setWebcam} setLoginFrame={setLoginFrame} setSignInMessage={setSignInMessage} context={context} className={classes.box} />
 				</Box>
 				<form
 					id='signInForm'
@@ -89,6 +111,7 @@ export default function SignIn({ context, setContext, signInMessage, setSignInMe
 							email.disabled = true;
 							setWebcam(true);
 							setSignInMessage('Point the camera to your face');
+							formData.append('email', email.value);
 						} else {
 							setSignInMessage("Email field can't be empty");
 						}
