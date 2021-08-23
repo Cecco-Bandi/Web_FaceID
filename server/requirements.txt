@@ -3,3 +3,5 @@ flask-mongoengine
 face-recognition
 numpy
 cryptography
+requests
+pybase64

@@ -1,5 +1,7 @@
 import os
-from flask import Flask, jsonify, request, Response
+
+from generate_key import generate_key
+from flask import Flask, request, Response, redirect
 
 from flask_mongoengine import MongoEngine
 
@@ -26,67 +28,77 @@ class Users(db.DynamicDocument):
     last_name = db.StringField(max_length=60, required=True)
     email = db.EmailField(required=True)
     password = db.StringField(required=True)
-    face_reco_encoding = db.StringField()
-
-# Demo route
-@app.route('/demo')
-def index():
-    Users.objects().delete()
-    biden_encoding = api.face_recognition.face_encodings(image)[0]
-    biden_encoding = api.encrypt_enc(biden_encoding)
-    Users(first_name="Dummy", 
-        last_name="Dummy", 
-        email="dummy@dummy.com", 
-        password="dummy",
-        face_reco_encoding=biden_encoding).save()
-    Users(first_name="Francesco", 
-        last_name="Carrabino", 
-        email="francesco.carrabino@gmail.com", 
-        password="frank",
-        role="idiot").save()
-    Users(first_name="Andrea", 
-        last_name="Apicella", 
-        email="andrea.apicella221@gmail.com", 
-        password="andrew").save()
-
-    users = Users.objects().to_json()
-    return Response(users, mimetype="application/json", status=200)
+    face_reco_encoding = db.BinaryField()
 
 # Register user
 @app.route('/register', methods=['POST'])
 def register():
-    body = request.get_json()
-    new_user = Users()
-    new_user.first_name = body.get("first_name")
-    new_user.last_name = body.get("last_name")
-    new_user.email = body.get("email")
-    pwd = body.get("password")
-    pwd = generate_password_hash(pwd)
-    new_user.face_reco_encoding = api.get_encr_enc(body.get("face_reco_encoding"))
-    new_user.password = pwd
-    new_user.save()
+    if request.files:
+        body = request.form.to_dict()
+        if len(Users.objects(email = body["email"])) > 0:
+            return redirect(request.url)
+        else:
+            new_user = Users()
+            new_user.first_name = body["first_name"]
+            new_user.last_name = body["last_name"]
+            new_user.email = body["email"]
+            pwd = generate_password_hash(body["password"])
+            face_reco_enc = api.get_encr_enc(request.files['file'])
+            new_user.face_reco_encoding = face_reco_enc
+            new_user.password = pwd
+            new_user.save()
+            return Response(new_user.to_json(), mimetype="application/json", status=200)
+    else:
+        return not_found()
 
-    return Response(new_user, mimetype="application/json", status=200)
-
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 def login_user():
-    body = request.get_json()
-    log_user = Users.objects(email=body.get("email"))
-    encr_enc = log_user.face_reco_encoding
+    body = request.form.to_dict()
+    log_user = Users.objects(email=body["email"])
+    face_reco_enc = api.create_enc(request.files['file'])
+    for user in log_user:
+        
+        # return Response({"Type of Encoding on the image in input: {} --- type of Encoding from database: {}".format(face_reco_enc.shape, type(user.face_reco_encoding))})
+        if api.authenticate_user(face_reco_enc, user.face_reco_encoding):
+            return Response(user.to_json(), mimetype="application/json", status=200)
+        else:
+            return not_found()
+
     
-    return
+
+@app.route('/delete', methods=['POST'])
+def delete_users():
+    body = request.form.to_dict()
+    users_to_del = Users.objects(email=body["email"])
+    len_users_del = len(users_to_del)
+    users_to_del.delete()
+    return Response({"Deleted {} user(s)".format(len_users_del)}, mimetype="application/json", status=200)
+
+@app.route('/list')
+def list_users():
+    users = Users.objects().to_json()
+    return Response(users, mimetype="application/json", status=200)
+
+@app.route('/info')
+def server_info():
+    return Response({os.environ['MONGODB_USERNAME'], os.environ['MONGODB_PASSWORD']}, mimetype="application/json", status=200)
+
+@app.route('/generate_key')
+def generate_priv_key():
+    generate_key()
+    return Response({"Key Generated"}, mimetype="application/json", status=200)
+
+@app.route('/decrypt_encoding')
+def decrypt_encoding():
+    body = request.form.to_dict()
+    users = Users.objects(email=body["email"])
+    for user in users:
+        decr_enc = api.decrypt_enc(user.face_reco_encoding)
+        return Response({"Decrypted encoding = {}".format(decr_enc)}, mimetype="application/json", status=200)
 
 @app.errorhandler(404)
-def not_found(erro=None):
-    message = {
-        'status': 404,
-        'message': 'Not found' + request.url
-    }
-    resp = jsonify(message)
-
-    resp.status_code = 404
-
-    return 404
+def not_found(error=None):
+    return Response({"Not Found"}, mimetype="application/json", status=404)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
