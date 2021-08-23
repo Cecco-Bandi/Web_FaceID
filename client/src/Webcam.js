@@ -1,7 +1,7 @@
 import Box from '@material-ui/core/Box';
 import PersonIcon from '@material-ui/icons/Person';
 import { makeStyles } from '@material-ui/core/styles';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 const useStyles = makeStyles(() => ({
 	icon: {
@@ -9,7 +9,7 @@ const useStyles = makeStyles(() => ({
 	},
 }));
 
-const Webcam = ({ webcam, setWebcam, setSignInMessage, setSignUpMessage, context, formdata }) => {
+const Webcam = ({ webcam, setWebcam, setLoginFrame, setRegFrame, setSignInMessage, setSignUpMessage, context }) => {
 	const classes = useStyles();
 	useEffect(() => {
 		if (webcam) {
@@ -31,11 +31,15 @@ const Webcam = ({ webcam, setWebcam, setSignInMessage, setSignUpMessage, context
 						.then((imageBitmap) => {
 							createImageBitmap(imageBitmap, { resizeWidth: 32, resizeHeight: 32 })
 								.then((resizedImageBitmap) => {
-									console.log(resizedImageBitmap); //32x32 Image Bitmap ready to send with Axios
-
+									setWebcam(false);
+									// console.log(resizedImageBitmap); //32x32 Image Bitmap
+									if (context === 'SignIn') {
+										setLoginFrame(resizedImageBitmap);
+									} else if (context === 'SignUp') {
+										setRegFrame(resizedImageBitmap);
+									}
 									track.stop();
 									track.srcObject = null;
-									setWebcam(false);
 									if (context === 'SignIn') {
 										setSignInMessage('Attempting to login...');
 									} else if (context === 'SignUp') {

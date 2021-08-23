@@ -10,7 +10,7 @@ services:
         stdin_open: true
         tty: true
         volumes:
-            - ./src:/user/src/app/src
+            - ./client:/app
             - /app/node_modules
         networks: 
             - frontend
@@ -40,7 +40,7 @@ services:
         environment:
             MONGODB_HOST: mongodb
             MONGODB_USERNAME: "apiuser"
-            MONGODB_PASSWORD: "apipass"
+            MONGODB_PASSWORD: "apipassword"
         depends_on: 
             - mongodb
         networks:

@@ -2,6 +2,7 @@ import os
 
 from generate_key import generate_key
 from flask import Flask, request, Response, redirect
+from flask_cors import CORS, cross_origin
 
 from flask_mongoengine import MongoEngine
 
@@ -19,6 +20,8 @@ app.config['MONGODB_SETTINGS'] = {
     'password': os.environ['MONGODB_PASSWORD'],
     'db': 'webapp'
 }
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 db = MongoEngine()
 db.init_app(app)
@@ -32,6 +35,7 @@ class Users(db.DynamicDocument):
 
 # Register user
 @app.route('/register', methods=['POST'])
+@cross_origin()
 def register():
     if request.files:
         body = request.form.to_dict()
@@ -52,6 +56,7 @@ def register():
         return not_found()
 
 @app.route('/login', methods=['POST'])
+@cross_origin()
 def login_user():
     body = request.form.to_dict()
     log_user = Users.objects(email=body["email"])

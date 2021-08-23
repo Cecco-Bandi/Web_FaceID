@@ -4,4 +4,4 @@ face-recognition
 numpy
 cryptography
 requests
-pybase64
+flask_cors
