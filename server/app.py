@@ -1,8 +1,9 @@
 import os
 
 from generate_key import generate_key
-from flask import Flask, request, Response, redirect
+from flask import Flask, request, Response, redirect, jsonify
 from flask_cors import CORS, cross_origin
+import json
 
 from flask_mongoengine import MongoEngine
 
@@ -20,8 +21,7 @@ app.config['MONGODB_SETTINGS'] = {
     'password': os.environ['MONGODB_PASSWORD'],
     'db': 'webapp'
 }
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+cors = CORS(app, resources={r"/register": {"origins": "http://localhost:3000"}})
 
 db = MongoEngine()
 db.init_app(app)
@@ -35,8 +35,10 @@ class Users(db.DynamicDocument):
 
 # Register user
 @app.route('/register', methods=['POST'])
-@cross_origin()
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def register():
+    body = request.form.to_dict()
+    # return Response(request.files, mimetype="application/json", status=200)
     if request.files:
         body = request.form.to_dict()
         if len(Users.objects(email = body["email"])) > 0:
@@ -47,7 +49,7 @@ def register():
             new_user.last_name = body["last_name"]
             new_user.email = body["email"]
             pwd = generate_password_hash(body["password"])
-            face_reco_enc = api.get_encr_enc(request.files['file'])
+            face_reco_enc = api.get_encr_enc(request.files['regFrame'])
             new_user.face_reco_encoding = face_reco_enc
             new_user.password = pwd
             new_user.save()
@@ -60,7 +62,7 @@ def register():
 def login_user():
     body = request.form.to_dict()
     log_user = Users.objects(email=body["email"])
-    face_reco_enc = api.create_enc(request.files['file'])
+    face_reco_enc = api.create_enc(request.files['loginFrame'])
     for user in log_user:
         
         # return Response({"Type of Encoding on the image in input: {} --- type of Encoding from database: {}".format(face_reco_enc.shape, type(user.face_reco_encoding))})

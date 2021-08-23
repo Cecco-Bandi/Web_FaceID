@@ -67,7 +67,8 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 
 	useEffect(() => {
 		if (regFrame !== null) {
-			formData.append('regFrame', regFrame);
+			const blob = new Blob([regFrame], {type: 'image/bmp'});
+			formData.append('regFrame', blob);
 			console.log('frame added to formData:', formData.get('regFrame'));
 			setRegFrame(null);
 
@@ -77,15 +78,23 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				console.log(value);
 			}
 			//#### TO REMOVE BEFORE DEPLOYING ####
-
-			
-			fetch('http://192.168.32.3/register', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'multipart/form-data',
-				},
-				body: formData,
-			});
+			axios.post('http://localhost:80/register', formData, {
+					headers: {
+						'Content-Type': 'multipart/form-data',
+					}
+				})
+			// fetch('http://localhost:80/register', {
+			// 	method: 'POST',
+			// 	headers: {
+			// 		'Content-Type': 'multipart/form-data',
+			// 	},
+			// 	body: formData,
+			// }).then(data => {
+			//   console.log('Success:', data);
+			// })
+			// .catch((error) => {
+			//   console.error('Error:', error);
+			// });
 		}
 	}, [regFrame, setRegFrame, formData]);
 
@@ -118,7 +127,8 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 							inputs.forEach((input) => (input.disabled = true));
 							setSignUpMessage('Point the camera to your face');
 							inputs.forEach((input) => {
-								const key = toString(input.name);
+								const key = input.name;
+								console.log('KEY ----> ', input.name)
 								const value = input.value;
 								formData.append(key, value);
 							});
@@ -130,10 +140,10 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				>
 					<Grid container spacing={2}>
 						<Grid item xs={12} sm={6}>
-							<TextField autoComplete='fname' name='firstName' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus />
+							<TextField autoComplete='fname' name='first_name' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus />
 						</Grid>
 						<Grid item xs={12} sm={6}>
-							<TextField variant='outlined' required fullWidth id='lastName' label='Last Name' name='lastName' autoComplete='lname' />
+							<TextField variant='outlined' required fullWidth id='last_name' label='Last Name' name='lastName' autoComplete='lname' />
 						</Grid>
 						<Grid item xs={12}>
 							<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' />
