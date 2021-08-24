@@ -82,7 +82,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				console.log(pair[0]+ ', '+ pair[1]);
 			 }
 			//#### TO REMOVE BEFORE DEPLOYING ####
-			axios.post('http://localhost:80/base64', formData, {
+			axios.post('http://localhost:80/register', formData, {
 					headers: {
 						'Content-Type': 'application/json',
 					}

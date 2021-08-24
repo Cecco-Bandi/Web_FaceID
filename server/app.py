@@ -69,13 +69,12 @@ def register():
             new_user.last_name = body["last_name"]
             new_user.email = body["email"]
             pwd = generate_password_hash(body["password"])
-            with urlopen(body["regFrame"]) as response:
-                data = response.read()
+            data = urlopen(body["regFrame"])            
             face_reco_enc = api.get_encr_enc(data)
             new_user.face_reco_encoding = face_reco_enc
             new_user.password = pwd
             new_user.save()
-            return Response({"ok"}, mimetype="application/json", status=200)
+            return Response({new_user.to_json()}, mimetype="application/json", status=200)
     else:
         return not_found()
 
@@ -83,10 +82,9 @@ def register():
 def login_user():
     body = request.form.to_dict()
     log_user = Users.objects(email=body["email"])
-    face_reco_enc = api.create_enc(request.files['loginFrame'])
+    data = urlopen(body["loginFrame"])  
+    face_reco_enc = api.create_enc(data)
     for user in log_user:
-        
-        # return Response({"Type of Encoding on the image in input: {} --- type of Encoding from database: {}".format(face_reco_enc.shape, type(user.face_reco_encoding))})
         if api.authenticate_user(face_reco_enc, user.face_reco_encoding):
             return Response(user.to_json(), mimetype="application/json", status=200)
         else:
@@ -99,7 +97,7 @@ def base64dec():
         data = response.read()
     with open('pic1.png', 'wb') as handle:
         handle.write(data)
-    return Response({type(data)}, mimetype="application/json", status=200)
+    return Response(json.dumps(data), mimetype="application/json", status=200)
 
 
 @app.route('/delete', methods=['POST'])

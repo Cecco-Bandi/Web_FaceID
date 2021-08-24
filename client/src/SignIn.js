@@ -68,7 +68,12 @@ export default function SignIn({ loginFrame, setLoginFrame, context, setContext,
 
 	useEffect(() => {
 		if (loginFrame !== null) {
-			formData.append('frame', loginFrame);
+			const canvas = document.getElementById('myCanvas');
+			const ctx = canvas.getContext('2d');
+			ctx.drawImage(loginFrame, 0, 0);
+
+			const image_to_send = canvas.toDataURL()
+			formData.append('loginFrame', image_to_send);
 			setLoginFrame(null);
 			//#### TO REMOVE BEFORE DEPLOYING ####
 			console.log('POST data: ');
@@ -76,9 +81,9 @@ export default function SignIn({ loginFrame, setLoginFrame, context, setContext,
 				console.log(value);
 			}
 			//#### TO REMOVE BEFORE DEPLOYING ####
-			axios.post('http://localhost/login', formData, {
+			const resp = axios.post('http://localhost/login', formData, {
 				headers: {
-					'Content-Type': 'multipart/form-data',
+					'Content-Type': 'application/json',
 				},
 			});
 			setFormData(new FormData());
@@ -88,6 +93,7 @@ export default function SignIn({ loginFrame, setLoginFrame, context, setContext,
 		<Container component='main' maxWidth='xs'>
 			<CssBaseline />
 			<div className={classes.paper}>
+				<canvas id="myCanvas" width="128" height="128"></canvas>
 				<Avatar className={classes.avatar}>
 					<LockOutlinedIcon />
 				</Avatar>
