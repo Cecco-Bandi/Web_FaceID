@@ -10,9 +10,6 @@ from urllib.request import urlopen
 
 from PIL import Image
 
-# import sentry_sdk
-# from sentry_sdk.integrations.flask import FlaskIntegration
-
 import api
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -132,7 +129,7 @@ def decrypt_encoding():
 
 @app.errorhandler(404)
 def not_found():
-    return Response({"Zio Caro"}, mimetype="application/json", status=404)
+    return Response({"NOT FOUND"}, mimetype="application/json", status=404)
 
 
 if __name__ == '__main__':

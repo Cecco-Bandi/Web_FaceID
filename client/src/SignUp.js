@@ -117,7 +117,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				<Box className={classes.box} mb={2}>
 					<Webcam webcam={webcam} setWebcam={setWebcam} regFrame={regFrame} setRegFrame={setRegFrame} setSignUpMessage={setSignUpMessage} context={context} className={classes.box} />
 				</Box>
-				<canvas id="myCanvas" width="0" height="0" style={{visibility: "hidden"}}></canvas>
+				<canvas id="myCanvas" width="120" height="120" ></canvas>
 				<form
 					id='form'
 					className={classes.form}
