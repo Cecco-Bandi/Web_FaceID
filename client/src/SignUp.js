@@ -109,7 +109,6 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				<Avatar className={classes.avatar}>
 					<LockOutlinedIcon />
 				</Avatar>
-				<canvas id="myCanvas" width="128" height="128"></canvas>
 				<Box my={2}>
 					<Typography component='h1' variant='h5'>
 						{signUpMessage}
@@ -118,6 +117,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				<Box className={classes.box} mb={2}>
 					<Webcam webcam={webcam} setWebcam={setWebcam} regFrame={regFrame} setRegFrame={setRegFrame} setSignUpMessage={setSignUpMessage} context={context} className={classes.box} />
 				</Box>
+				<canvas id="myCanvas" width="0" height="0" style={{visibility: "hidden"}}></canvas>
 				<form
 					id='form'
 					className={classes.form}
@@ -133,7 +133,6 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 							setSignUpMessage('Point the camera to your face');
 							inputs.forEach((input) => {
 								const key = input.name;
-								console.log('KEY ----> ', input.name)
 								const value = input.value;
 								formData.append(key, value);
 							});
