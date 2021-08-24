@@ -3,9 +3,10 @@ import os
 from generate_key import generate_key
 from flask import Flask, request, Response, redirect, jsonify
 from flask_cors import CORS, cross_origin
-import json
-
 from flask_mongoengine import MongoEngine
+
+# import sentry_sdk
+# from sentry_sdk.integrations.flask import FlaskIntegration
 
 import api
 
@@ -14,6 +15,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 image = api.face_recognition.load_image_file("biden.jpeg")
 face_landmarks_list = api.face_recognition.face_landmarks(image)
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+sentry_sdk.init(
+    dsn="https://d848d18badb1453bb53dbdbdafc69ad6@o971637.ingest.sentry.io/5924031",
+    integrations=[FlaskIntegration()],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0
+)
+
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {
     'host': os.environ['MONGODB_HOST'],
@@ -21,7 +35,7 @@ app.config['MONGODB_SETTINGS'] = {
     'password': os.environ['MONGODB_PASSWORD'],
     'db': 'webapp'
 }
-cors = CORS(app, resources={r"/register": {"origins": "http://localhost:3000"}})
+cors = CORS(app)
 
 db = MongoEngine()
 db.init_app(app)
@@ -33,12 +47,16 @@ class Users(db.DynamicDocument):
     password = db.StringField(required=True)
     face_reco_encoding = db.BinaryField()
 
+@app.route('/debug-sentry')
+def trigger_error():
+    division_by_zero = 1 / 0
+
 # Register user
 @app.route('/register', methods=['POST'])
-@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
+# @cross_origin()
 def register():
     body = request.form.to_dict()
-    # return Response(request.files, mimetype="application/json", status=200)
+    
     if request.files:
         body = request.form.to_dict()
         if len(Users.objects(email = body["email"])) > 0:
@@ -53,12 +71,11 @@ def register():
             new_user.face_reco_encoding = face_reco_enc
             new_user.password = pwd
             new_user.save()
-            return Response(new_user.to_json(), mimetype="application/json", status=200)
+            return Response({"ok"}, mimetype="application/json", status=200)
     else:
         return not_found()
 
 @app.route('/login', methods=['POST'])
-@cross_origin()
 def login_user():
     body = request.form.to_dict()
     log_user = Users.objects(email=body["email"])
@@ -104,8 +121,9 @@ def decrypt_encoding():
         return Response({"Decrypted encoding = {}".format(decr_enc)}, mimetype="application/json", status=200)
 
 @app.errorhandler(404)
-def not_found(error=None):
-    return Response({"Not Found"}, mimetype="application/json", status=404)
+def not_found():
+    return Response({"Zio Caro"}, mimetype="application/json", status=404)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

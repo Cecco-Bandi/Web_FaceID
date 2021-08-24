@@ -29,7 +29,7 @@ const Webcam = ({ webcam, setWebcam, setLoginFrame, setRegFrame, setSignInMessag
 					imageCapture
 						.grabFrame()
 						.then((imageBitmap) => {
-							createImageBitmap(imageBitmap, { resizeWidth: 32, resizeHeight: 32 })
+							createImageBitmap(imageBitmap, { resizeWidth: 128, resizeHeight: 128 })
 								.then((resizedImageBitmap) => {
 									setWebcam(false);
 									// console.log(resizedImageBitmap); //32x32 Image Bitmap

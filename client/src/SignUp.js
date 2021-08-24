@@ -67,22 +67,24 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 
 	useEffect(() => {
 		if (regFrame !== null) {
-			const blob = new Blob([regFrame], {type: 'image/bmp'});
-			formData.append('regFrame', blob);
+			const canvas = document.getElementById('myCanvas');
+			const ctx = canvas.getContext('2d');
+			ctx.drawImage(regFrame, 0, 0);
+			formData.append('regFrame', regFrame, 'chris.bpm');
 			console.log('frame added to formData:', formData.get('regFrame'));
 			setRegFrame(null);
 
 			//#### TO REMOVE BEFORE DEPLOYING ####
 			console.log('POST data: ');
-			for (let value of formData.values()) {
-				console.log(value);
-			}
+			for(var pair of formData.entries()) {
+				console.log(pair[0]+ ', '+ pair[1]);
+			 }
 			//#### TO REMOVE BEFORE DEPLOYING ####
-			axios.post('http://localhost:80/register', formData, {
-					headers: {
-						'Content-Type': 'multipart/form-data',
-					}
-				})
+			// axios.post('http://localhost:80/register', formData, {
+			// 		headers: {
+			// 			'Content-Type': 'multipart/form-data',
+			// 		}
+			// 	})
 			// fetch('http://localhost:80/register', {
 			// 	method: 'POST',
 			// 	headers: {
@@ -105,6 +107,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				<Avatar className={classes.avatar}>
 					<LockOutlinedIcon />
 				</Avatar>
+				<canvas id="myCanvas" width="128" height="128"></canvas>
 				<Box my={2}>
 					<Typography component='h1' variant='h5'>
 						{signUpMessage}
@@ -143,7 +146,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 							<TextField autoComplete='fname' name='first_name' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus />
 						</Grid>
 						<Grid item xs={12} sm={6}>
-							<TextField variant='outlined' required fullWidth id='last_name' label='Last Name' name='lastName' autoComplete='lname' />
+							<TextField variant='outlined' required fullWidth id='lastName' label='Last Name' name='last_name' autoComplete='lname' />
 						</Grid>
 						<Grid item xs={12}>
 							<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' />

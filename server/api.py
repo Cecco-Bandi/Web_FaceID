@@ -34,7 +34,7 @@ def create_enc(file):
     image = face_recognition.load_image_file(file)
     enc = face_recognition.face_encodings(image)
     return numpy.array(enc)
-
+    
 def get_encr_enc(file) -> str:
     enc = create_enc(file)
     encr_enc = encrypt_enc(enc)
