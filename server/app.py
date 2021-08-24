@@ -4,6 +4,11 @@ from generate_key import generate_key
 from flask import Flask, request, Response, redirect, jsonify
 from flask_cors import CORS, cross_origin
 from flask_mongoengine import MongoEngine
+import base64
+import json
+from urllib.request import urlopen
+
+from PIL import Image
 
 # import sentry_sdk
 # from sentry_sdk.integrations.flask import FlaskIntegration
@@ -11,9 +16,6 @@ from flask_mongoengine import MongoEngine
 import api
 
 from werkzeug.security import generate_password_hash, check_password_hash
-
-image = api.face_recognition.load_image_file("biden.jpeg")
-face_landmarks_list = api.face_recognition.face_landmarks(image)
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -57,7 +59,7 @@ def trigger_error():
 def register():
     body = request.form.to_dict()
     
-    if request.files:
+    if body["regFrame"] is not None:
         body = request.form.to_dict()
         if len(Users.objects(email = body["email"])) > 0:
             return redirect(request.url)
@@ -67,7 +69,9 @@ def register():
             new_user.last_name = body["last_name"]
             new_user.email = body["email"]
             pwd = generate_password_hash(body["password"])
-            face_reco_enc = api.get_encr_enc(request.files['regFrame'])
+            with urlopen(body["regFrame"]) as response:
+                data = response.read()
+            face_reco_enc = api.get_encr_enc(data)
             new_user.face_reco_encoding = face_reco_enc
             new_user.password = pwd
             new_user.save()
@@ -88,7 +92,15 @@ def login_user():
         else:
             return not_found()
 
-    
+@app.route('/base64', methods=['POST'])
+def base64dec():
+    body = request.form.to_dict()
+    with urlopen(body["regFrame"]) as response:
+        data = response.read()
+    with open('pic1.png', 'wb') as handle:
+        handle.write(data)
+    return Response({type(data)}, mimetype="application/json", status=200)
+
 
 @app.route('/delete', methods=['POST'])
 def delete_users():

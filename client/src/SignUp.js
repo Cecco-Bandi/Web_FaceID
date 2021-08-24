@@ -70,7 +70,9 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 			const canvas = document.getElementById('myCanvas');
 			const ctx = canvas.getContext('2d');
 			ctx.drawImage(regFrame, 0, 0);
-			formData.append('regFrame', regFrame, 'chris.bpm');
+
+			const image_to_send = canvas.toDataURL()
+			formData.append('regFrame', image_to_send);
 			console.log('frame added to formData:', formData.get('regFrame'));
 			setRegFrame(null);
 
@@ -80,11 +82,11 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				console.log(pair[0]+ ', '+ pair[1]);
 			 }
 			//#### TO REMOVE BEFORE DEPLOYING ####
-			// axios.post('http://localhost:80/register', formData, {
-			// 		headers: {
-			// 			'Content-Type': 'multipart/form-data',
-			// 		}
-			// 	})
+			axios.post('http://localhost:80/base64', formData, {
+					headers: {
+						'Content-Type': 'application/json',
+					}
+				})
 			// fetch('http://localhost:80/register', {
 			// 	method: 'POST',
 			// 	headers: {
