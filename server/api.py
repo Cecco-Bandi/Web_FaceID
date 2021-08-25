@@ -28,19 +28,12 @@ def decrypt_enc(encr_enc: bytes) -> ndarray:
     fernet = Fernet(key)
     decr_enc = fernet.decrypt(encr_enc)
     decr_enc = decr_enc.decode()
-    return decr_enc
+    return string_to_enc(decr_enc)
 
 def create_enc(file):
     image = face_recognition.load_image_file(file)
-    enc = face_recognition.face_encodings(image)
-    return numpy.array(enc)
-    
-def get_encr_enc(file) -> str:
-    enc = create_enc(file)
-    encr_enc = encrypt_enc(enc)
-    return encr_enc
-
-def authenticate_user(enc: ndarray, encr_enc_db: bytes) -> bool:
-    decr_enc_db = decrypt_enc(encr_enc_db)
-    decr_enc_db =  numpy.reshape(string_to_enc(decr_enc_db), (1, 128))
-    return compare_enc(enc, decr_enc_db)
+    try:
+        enc = face_recognition.face_encodings(image)[0]
+        return enc
+    except:
+        return "error"

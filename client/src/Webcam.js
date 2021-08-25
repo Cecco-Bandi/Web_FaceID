@@ -5,7 +5,9 @@ import { useEffect } from 'react';
 
 const useStyles = makeStyles(() => ({
 	icon: {
-		fontSize: '300px',
+		justifySelf: 'center',
+		alignSelf: 'center',
+		fontSize: '250px',
 	},
 }));
 
@@ -20,7 +22,7 @@ const Webcam = ({ webcam, setWebcam, setLoginFrame, setRegFrame, setSignInMessag
 	const startVideo = () => {
 		let imageCapture;
 		navigator.mediaDevices
-			.getUserMedia({ video: { width: 300, height: 300 } })
+			.getUserMedia({ video: { width: 250, height: 250 } })
 			.then((mediaStream) => {
 				document.querySelector('.video_container').srcObject = mediaStream;
 				const track = mediaStream.getVideoTracks()[0];

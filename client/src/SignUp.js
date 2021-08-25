@@ -1,71 +1,61 @@
-import React, { useState } from 'react';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
+import React, { useState, useEffect } from 'react';
+import Copyright from './Copyright';
+import {Box, Grid, Link, TextField, Avatar, Button, CssBaseline, Typography, Container, Paper} from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import Container from '@material-ui/core/Container';
+import useStyles from './styles';
+import theme from './theme';
+import {ThemeProvider} from '@material-ui/core/styles'
 import Webcam from './Webcam';
-import { useEffect } from 'react';
+import { Redirect } from 'react-router-dom';
 const axios = require('axios');
-
-function Copyright() {
-	return (
-		<Typography variant='body2' color='textSecondary' align='center'>
-			{'Copyright © '}
-			<Link color='inherit' href='https://material-ui.com/'>
-				Your Website
-			</Link>{' '}
-			{new Date().getFullYear()}
-			{'.'}
-		</Typography>
-	);
-}
-
-const useStyles = makeStyles((theme) => ({
-	paper: {
-		marginTop: theme.spacing(8),
-		display: 'flex',
-		flexDirection: 'column',
-		alignItems: 'center',
-	},
-	avatar: {
-		margin: theme.spacing(1),
-		backgroundColor: theme.palette.secondary.main,
-	},
-	form: {
-		width: '100%', // Fix IE 11 issue.
-		marginTop: theme.spacing(3),
-	},
-	submit: {
-		margin: theme.spacing(3, 0, 2),
-	},
-	box: {
-		background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-		border: 0,
-		// backgroundColor: 'rgba(255, 105, 135, 0.3)',
-		boxShadow: '0 4px 8px 0 rgba(255, 105, 135, .7)',
-		color: 'white',
-		height: 300,
-		width: 300,
-	},
-}));
 
 export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 	useEffect(() => {
 		setContext('SignUp');
 	});
-	const classes = useStyles();
-	const [webcam, setWebcam] = useState(false);
-	const [signUpMessage, setSignUpMessage] = useState('Please fill in the form');
-	const [formData, setFormData] = useState(new FormData());
 
-	useEffect(() => {
+	const classes = useStyles();
+	const [signUpMessage, setSignUpMessage] = useState('Sign Up')
+	const [disableSubmit, setDisableSubmit] = useState(true)
+	const [webcam, setWebcam] = useState(false);
+	const [emailInput, setEmailInput] = useState(false)
+	const [emailInputMessage, setEmailInputMessage] = useState('');
+	const [formData, setFormData] = useState(new FormData());
+	const [redirect, setRedirect] = useState(false)
+	const [user, setUser] = useState(null)
+
+	const stateChange = async () => {
+		let emailInput = document.getElementById("email")
+		const user = await axios.get('http://localhost/list').then(res => {
+			const userEmail = res.data.find(user => user.email === emailInput.value);
+			if (userEmail) return userEmail
+		});
+		console.log(user)
+		if (user) {
+			setEmailInput(true);
+			setEmailInputMessage("Email already in use");
+		} else {
+			setEmailInput(false);
+			setEmailInputMessage("Valid Email");
+		}
+	}
+
+	const checkUniform = () => {
+		const inputs = document.querySelectorAll('input');
+		const inputsArr = Array.from(inputs);
+		const checkEmpty = (input) => input.value.length !== 0;
+		const uniform = inputsArr.every(checkEmpty);
+		return uniform;
+	}
+
+	const checkSubmitDisable = () => {
+		const uniform = checkUniform();
+		if (uniform) setDisableSubmit(false)
+		else setDisableSubmit(true);
+	}
+
+	useEffect( () => {
+		async function register() {
 		if (regFrame !== null) {
 			const canvas = document.getElementById('myCanvas');
 			const ctx = canvas.getContext('2d');
@@ -73,62 +63,59 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 
 			const image_to_send = canvas.toDataURL()
 			formData.append('regFrame', image_to_send);
-			console.log('frame added to formData:', formData.get('regFrame'));
 			setRegFrame(null);
-
-			//#### TO REMOVE BEFORE DEPLOYING ####
-			console.log('POST data: ');
-			for(var pair of formData.entries()) {
-				console.log(pair[0]+ ', '+ pair[1]);
-			 }
-			//#### TO REMOVE BEFORE DEPLOYING ####
-			axios.post('http://localhost:80/register', formData, {
+			
+			await axios.post('http://localhost:80/register', formData, {
 					headers: {
 						'Content-Type': 'application/json',
 					}
-				})
-			// fetch('http://localhost:80/register', {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		'Content-Type': 'multipart/form-data',
-			// 	},
-			// 	body: formData,
-			// }).then(data => {
-			//   console.log('Success:', data);
-			// })
-			// .catch((error) => {
-			//   console.error('Error:', error);
-			// });
+			}).then(res => {
+				if (res.status === 200) {
+					setUser(res.data)
+					setRedirect(true)
+				} else {
+					setSignUpMessage("Sign Up Failed")
+				}
+			  });			
 		}
+	};
+	register();	
 	}, [regFrame, setRegFrame, formData]);
 
+	if (redirect) {
+		return <Redirect
+					to={{
+					pathname: "/home",
+					state: { user: user}
+					}}
+				/>;
+	}
 	return (
-		<Container component='main' maxWidth='xs'>
+		<ThemeProvider theme={theme}>
+		<Container className={classes.container} >
 			<CssBaseline />
-			<div className={classes.paper}>
+			<Paper className={classes.paper}>
+			<div className={classes.backgroundDiv}/>
 				<Avatar className={classes.avatar}>
 					<LockOutlinedIcon />
 				</Avatar>
-				<Box my={2}>
-					<Typography component='h1' variant='h5'>
-						{signUpMessage}
-					</Typography>
-				</Box>
+
 				<Box className={classes.box} mb={2}>
 					<Webcam webcam={webcam} setWebcam={setWebcam} regFrame={regFrame} setRegFrame={setRegFrame} setSignUpMessage={setSignUpMessage} context={context} className={classes.box} />
 				</Box>
-				<canvas id="myCanvas" width="120" height="120" ></canvas>
+				<canvas id="myCanvas" width="120" height="120" className={classes.canvas}></canvas>
+				<Typography className={classes.message} component='h1' variant='h5' color="primary">
+					{signUpMessage}
+				</Typography>
 				<form
 					id='form'
 					className={classes.form}
 					noValidate
-					onSubmit={async (e) => {
+					onSubmit={(e) => {
 						e.preventDefault();
-						let inputs = document.querySelectorAll('input');
-						const inputsArr = Array.from(inputs);
-						const checkEmpty = (input) => input.value.length !== 0;
-						const uniform = inputsArr.every(checkEmpty);
+						const uniform = checkUniform()
 						if (uniform) {
+							const inputs = document.querySelectorAll('input');
 							inputs.forEach((input) => (input.disabled = true));
 							setSignUpMessage('Point the camera to your face');
 							inputs.forEach((input) => {
@@ -142,21 +129,21 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 						}
 					}}
 				>
-					<Grid container spacing={2}>
-						<Grid item xs={12} sm={6}>
-							<TextField autoComplete='fname' name='first_name' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus />
+					<Grid container spacing={3}>
+						<Grid item xs={6} >
+							<TextField autoComplete='fname' name='first_name' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus onBlur={checkSubmitDisable} />
 						</Grid>
-						<Grid item xs={12} sm={6}>
-							<TextField variant='outlined' required fullWidth id='lastName' label='Last Name' name='last_name' autoComplete='lname' />
-						</Grid>
-						<Grid item xs={12}>
-							<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' />
+						<Grid item xs={6}>
+							<TextField variant='outlined' required fullWidth id='lastName' label='Last Name' name='last_name' autoComplete='lname' onBlur={checkSubmitDisable} />
 						</Grid>
 						<Grid item xs={12}>
-							<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' />
+							<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' onBlur={stateChange} onChange={checkSubmitDisable} error={emailInput} helperText={emailInputMessage}/>
+						</Grid>
+						<Grid item xs={12}>
+							<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' onChange={checkSubmitDisable} />
 						</Grid>
 					</Grid>
-					<Button fullWidth variant='contained' color='primary' className={classes.submit} type='submit'>
+					<Button fullWidth disabled={disableSubmit} variant='contained' className={classes.submit} type='submit'>
 						Sign Up
 					</Button>
 					<Grid container justifyContent='flex-end'>
@@ -167,10 +154,11 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 						</Grid>
 					</Grid>
 				</form>
-			</div>
-			<Box mt={5}>
+			</Paper>
+			<Box  mt={5}>
 				<Copyright />
 			</Box>
 		</Container>
+		</ThemeProvider>
 	);
 }

@@ -1,5 +1,7 @@
 import os
 
+from numpy import ndarray
+
 from generate_key import generate_key
 from flask import Flask, request, Response, redirect, jsonify
 from flask_cors import CORS, cross_origin
@@ -52,14 +54,12 @@ def trigger_error():
 
 # Register user
 @app.route('/register', methods=['POST'])
-# @cross_origin()
 def register():
     body = request.form.to_dict()
-    
     if body["regFrame"] is not None:
         body = request.form.to_dict()
         if len(Users.objects(email = body["email"])) > 0:
-            return redirect(request.url)
+            return Response({"user already in database"})
         else:
             new_user = Users()
             new_user.first_name = body["first_name"]
@@ -67,43 +67,68 @@ def register():
             new_user.email = body["email"]
             pwd = generate_password_hash(body["password"])
             data = urlopen(body["regFrame"])            
-            face_reco_enc = api.get_encr_enc(data)
-            new_user.face_reco_encoding = face_reco_enc
-            new_user.password = pwd
-            new_user.save()
-            return Response({new_user.to_json()}, mimetype="application/json", status=200)
+            face_reco_enc = api.create_enc(data)
+            if type(face_reco_enc) is str:
+                return Response(json.dumps(face_reco_enc))
+            elif type(face_reco_enc) is ndarray:
+                face_reco_enc = api.encrypt_enc(face_reco_enc)
+                new_user.face_reco_encoding = face_reco_enc
+                new_user.password = pwd
+                new_user.save()
+                return Response(json.dumps({"first_name": new_user.first_name, "last_name": new_user.last_name, "email": new_user.email}), mimetype="application/json", status=200)
     else:
         return not_found()
 
 @app.route('/login', methods=['POST'])
 def login_user():
     body = request.form.to_dict()
-    log_user = Users.objects(email=body["email"])
     data = urlopen(body["loginFrame"])  
     face_reco_enc = api.create_enc(data)
-    for user in log_user:
-        if api.authenticate_user(face_reco_enc, user.face_reco_encoding):
-            return Response(user.to_json(), mimetype="application/json", status=200)
-        else:
-            return not_found()
+    if type(face_reco_enc) is str:
+        return Response(json.dumps(face_reco_enc))
+    elif type(face_reco_enc) is ndarray:        
+        for user in Users.objects(email=body["email"]):
+            face_reco_enc_db = api.decrypt_enc(user.face_reco_encoding)
+            respBool = api.face_recognition.compare_faces([face_reco_enc], face_reco_enc_db)[0]
+            if bool(respBool) :
+                user_logged = Users.objects(email=body["email"]).only("first_name").only("last_name").only("email")
+                return Response(user_logged.to_json(), mimetype="application/json", status=200)
+            else:
+                return not_found()
 
-@app.route('/base64', methods=['POST'])
-def base64dec():
-    body = request.form.to_dict()
-    with urlopen(body["regFrame"]) as response:
-        data = response.read()
-    with open('pic1.png', 'wb') as handle:
-        handle.write(data)
-    return Response(json.dumps(data), mimetype="application/json", status=200)
+# @app.route('/base64', methods=['POST'])
+# def base64dec():
+#     body = request.form.to_dict()
+#     with urlopen(body["regFrame"]) as response:
+#         data = response.read()
+#     with open('pic1.png', 'wb') as handle:
+#         handle.write(data)
+#     return Response(json.dumps(data), mimetype="application/json", status=200)
 
 
-@app.route('/delete', methods=['POST'])
+@app.route('/delete', methods=['DELETE'])
 def delete_users():
     body = request.form.to_dict()
     users_to_del = Users.objects(email=body["email"])
     len_users_del = len(users_to_del)
     users_to_del.delete()
     return Response({"Deleted {} user(s)".format(len_users_del)}, mimetype="application/json", status=200)
+
+@app.route('/delete_all', methods=['DELETE'])
+def delete_all_users():
+    users_to_del = Users.objects()
+    len_users_del = len(users_to_del)
+    users_to_del.delete()
+    return Response({"Deleted {} user(s)".format(len_users_del)}, mimetype="application/json", status=200)
+
+@app.route('/check_email')
+def email_exists():
+    body = request.form.to_dict()
+    users = Users.objects(body["email"])
+    if len(users) > 0:
+        return Response({"An user with email {} already exists"}, status=205)
+    else:
+        return Response({"Email is valid"}, status=200)
 
 @app.route('/list')
 def list_users():
