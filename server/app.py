@@ -16,19 +16,6 @@ import api
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# import sentry_sdk
-# from sentry_sdk.integrations.flask import FlaskIntegration
-
-# sentry_sdk.init(
-#     dsn="https://d848d18badb1453bb53dbdbdafc69ad6@o971637.ingest.sentry.io/5924031",
-#     integrations=[FlaskIntegration()],
-
-#     # Set traces_sample_rate to 1.0 to capture 100%
-#     # of transactions for performance monitoring.
-#     # We recommend adjusting this value in production.
-#     traces_sample_rate=1.0
-# )
-
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {
     'host': os.environ['MONGODB_HOST'],
@@ -110,18 +97,6 @@ def login_user():
     else: 
         return not_found()
 
-
-
-# @app.route('/base64', methods=['POST'])
-# def base64dec():
-#     body = request.form.to_dict()
-#     with urlopen(body["regFrame"]) as response:
-#         data = response.read()
-#     with open('pic1.png', 'wb') as handle:
-#         handle.write(data)
-#     return Response(json.dumps(data), mimetype="application/json", status=200)
-
-
 @app.route('/delete', methods=['DELETE'])
 def delete_users():
     body = request.form.to_dict()
@@ -159,14 +134,6 @@ def server_info():
 def generate_priv_key():
     generate_key()
     return Response({"Key Generated"}, mimetype="application/json", status=200)
-
-@app.route('/decrypt_encoding')
-def decrypt_encoding():
-    body = request.form.to_dict()
-    users = Users.objects(email=body["email"])
-    for user in users:
-        decr_enc = api.decrypt_enc(user.face_reco_encoding)
-        return Response({"Decrypted encoding = {}".format(decr_enc)}, mimetype="application/json", status=200)
 
 @app.errorhandler(404)
 def not_found():

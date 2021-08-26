@@ -29,7 +29,6 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 			const userEmail = res.data.find(user => user.email === emailInput.value);
 			if (userEmail) return userEmail
 		});
-		console.log(user)
 		if (user) {
 			setEmailInput(true);
 			setEmailInputMessage("Email already in use");
@@ -71,7 +70,6 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 					}
 			}).then(res => {
 				if (res.status === 200) {
-					console.log(res.data)
 					history.push('/home', { state: res.data });
 				} else {
 					setSignUpMessage("Sign Up Failed")

@@ -37,12 +37,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 			const image_to_send = canvas.toDataURL()
 			formData.append('loginFrame', image_to_send);
 			setLoginFrame(null);
-			//#### TO REMOVE BEFORE DEPLOYING ####
-			console.log('POST data: ');
-			for (let value of formData.values()) {
-				console.log(value);
-			}
-			//#### TO REMOVE BEFORE DEPLOYING ####
+		
 			await axios.post('api/login', formData, {
 				headers: {
 					'Content-Type': 'application/json',
@@ -70,7 +65,6 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 			const userEmail = res.data.find(user => user.email === emailInput.value);
 			if (userEmail) return userEmail
 		});
-		console.log(user)
 		if (user) {
 			setEmailInput(false);
 			setEmailInputMessage("Valid Email");
@@ -101,7 +95,6 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 				if (error.response) {
 				  if (error.response.status === 404) {
 					setSignInMessage("Password Incorrect")
-					// setTimeout(window.location.reload(), 30000);
 				  }
 				}
 			});

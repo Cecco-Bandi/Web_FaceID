@@ -34,7 +34,6 @@ const Webcam = ({ webcam, setWebcam, setLoginFrame, setRegFrame, setSignInMessag
 							createImageBitmap(imageBitmap, { resizeWidth: 128, resizeHeight: 128 })
 								.then((resizedImageBitmap) => {
 									setWebcam(false);
-									// console.log(resizedImageBitmap); //32x32 Image Bitmap
 									if (context === 'SignIn') {
 										setLoginFrame(resizedImageBitmap);
 									} else if (context === 'SignUp') {
