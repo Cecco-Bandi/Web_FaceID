@@ -1,6 +1,6 @@
 import os
 
-from numpy import ndarray
+from numpy import empty, ndarray
 
 from generate_key import generate_key
 from flask import Flask, request, Response, redirect, jsonify
@@ -47,6 +47,7 @@ class Users(db.DynamicDocument):
     email = db.EmailField(required=True)
     password = db.StringField(required=True)
     face_reco_encoding = db.BinaryField()
+    image = db.DynamicField()
 
 @app.route('/debug-sentry')
 def trigger_error():
@@ -66,35 +67,50 @@ def register():
             new_user.last_name = body["last_name"]
             new_user.email = body["email"]
             pwd = generate_password_hash(body["password"])
-            data = urlopen(body["regFrame"])            
+            data = urlopen(body["regFrame"])
+            new_user.image = body["regFrame"]            
             face_reco_enc = api.create_enc(data)
             if type(face_reco_enc) is str:
-                return Response(json.dumps(face_reco_enc))
+                return not_found()
             elif type(face_reco_enc) is ndarray:
                 face_reco_enc = api.encrypt_enc(face_reco_enc)
                 new_user.face_reco_encoding = face_reco_enc
                 new_user.password = pwd
                 new_user.save()
-                return Response(json.dumps({"first_name": new_user.first_name, "last_name": new_user.last_name, "email": new_user.email}), mimetype="application/json", status=200)
+                return Response(json.dumps({"first_name": new_user.first_name, "last_name": new_user.last_name, "email": new_user.email, "image": new_user.image}), mimetype="application/json", status=200)
     else:
         return not_found()
 
 @app.route('/login', methods=['POST'])
 def login_user():
     body = request.form.to_dict()
-    data = urlopen(body["loginFrame"])  
-    face_reco_enc = api.create_enc(data)
-    if type(face_reco_enc) is str:
-        return Response(json.dumps(face_reco_enc))
-    elif type(face_reco_enc) is ndarray:        
-        for user in Users.objects(email=body["email"]):
-            face_reco_enc_db = api.decrypt_enc(user.face_reco_encoding)
-            respBool = api.face_recognition.compare_faces([face_reco_enc], face_reco_enc_db)[0]
-            if bool(respBool) :
-                user_logged = Users.objects(email=body["email"]).only("first_name").only("last_name").only("email")
-                return Response(user_logged.to_json(), mimetype="application/json", status=200)
-            else:
+    if len(Users.objects(email=body["email"])) > 0:
+        try:
+            data = urlopen(body["loginFrame"])  
+            face_reco_enc = api.create_enc(data)
+            if type(face_reco_enc) is str:
                 return not_found()
+            elif type(face_reco_enc) is ndarray:        
+                for user in Users.objects(email=body["email"]):
+                    face_reco_enc_db = api.decrypt_enc(user.face_reco_encoding)
+                    respBool = api.face_recognition.compare_faces([face_reco_enc], face_reco_enc_db)[0]
+                    if bool(respBool) :
+                        user_logged = Users.objects(email=body["email"]).only("first_name").only("last_name").only("email").only("image")
+                        return Response(user_logged.to_json(), mimetype="application/json", status=200)
+                    else:
+                        return not_found()
+        except:
+            for user in Users.objects(email=body["email"]):
+                respBool = check_password_hash(user.password, body["password"])
+                if respBool:
+                    user_logged = Users.objects(email=body["email"]).only("first_name").only("last_name").only("email").only("image")
+                    return Response(user_logged.to_json(), mimetype="application/json", status=200)
+                else:
+                    return not_found()
+    else: 
+        return not_found()
+
+
 
 # @app.route('/base64', methods=['POST'])
 # def base64dec():

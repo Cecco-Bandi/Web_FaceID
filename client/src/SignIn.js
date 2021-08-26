@@ -18,6 +18,8 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 	const [webcam, setWebcam] = useState(false);
 	const [formData, setFormData] = useState(new FormData());
 	const [signInMessage, setSignInMessage] = useState('Sign In')
+	const [logPass, setLogPass] = useState(false);
+	const [loginMethod, setLoginMethod] = useState("Face")
 	const history = useHistory();
 
 	const classes = useStyles();
@@ -43,11 +45,14 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 					'Content-Type': 'application/json',
 				},
 			}).then((res) => {
-				if (res.status === 200) {
-					history.push('/home', { state: res.data[0] });
-				} else {
+				history.push('/home', { state: res.data[0] });
+			}).catch(function (error) {
+				if (error.response) {
+				  if (error.response.status === 404) {
 					setSignInMessage("Login Failed")
-					setTimeout(history.push('/signin'), 3000);
+					setLoginMethod("Password")
+					setLogPass(true)
+				  }
 				}
 			});
 			setFormData(new FormData());
@@ -55,6 +60,33 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 	};
 	login();
 	}, [loginFrame, setLoginFrame, formData]);
+
+	async function loginWithPass() {
+		if (logPass) {
+			let email = document.querySelector('#email');
+			let password = document.querySelector('#password')
+			password.disabled = true;
+			email.disabled = true;
+			formData.append('email', email.value);
+			formData.append('password', password.value);
+			
+
+			await axios.post('http://localhost/login', formData, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}).then((res) => {
+				history.push('/home', { state: res.data[0] });
+			}).catch(function (error) {
+				if (error.response) {
+				  if (error.response.status === 404) {
+					setSignInMessage("Password Incorrect")
+					// setTimeout(window.location.reload(), 30000);
+				  }
+				}
+			});
+		}
+	}
 	
 	return (
 		<ThemeProvider theme={theme}>
@@ -80,22 +112,28 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 					noValidate
 					onSubmit={(e) => {
 						e.preventDefault();
-						let email = document.querySelector('#email');
-						if (email.value.length !== 0) {
-							email.disabled = true;
-							setWebcam(true);
-							setSignInMessage('Point the camera to your face');
-							formData.append('email', email.value);
-						} else {
+						if (logPass) {
+							loginWithPass()
+						}
+						else {
+							let email = document.querySelector('#email');
+							if (email.value.length !== 0) {
+								email.disabled = true;
+								setWebcam(true);
+								setSignInMessage('Point the camera to your face');
+								formData.append('email', email.value);
+							} else {
 							setSignInMessage("Email field can't be empty");
+							}
 						}
 					}}
 				>
 					<Box>
-						<TextField variant='outlined' margin='normal' fullWidth id='email' label='Email Address' name='email' autoComplete='email' autoFocus />
+						<TextField variant='outlined' margin='normal' fullWidth id='email' label='Email Address' name='email' autoComplete='email' autoFocus InputProps={{ className: classes.text}} />
 					</Box>
+					{logPass ? (<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' InputProps={{className: classes.text}}/>) : null}
 					<Button type='submit' fullWidth variant='contained' color='primary' className={classes.submit}>
-						Authenticate with Face
+						Authenticate with {loginMethod}
 					</Button>
 					<Grid container>
 						<Grid item>

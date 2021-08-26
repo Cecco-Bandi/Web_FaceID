@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from "react-router-dom";
 import Copyright from './Copyright';
 import {Box, Grid, Link, TextField, Avatar, Button, CssBaseline, Typography, Container, Paper} from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
@@ -6,7 +7,6 @@ import useStyles from './styles';
 import theme from './theme';
 import {ThemeProvider} from '@material-ui/core/styles'
 import Webcam from './Webcam';
-import { Redirect } from 'react-router-dom';
 const axios = require('axios');
 
 export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
@@ -21,8 +21,8 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 	const [emailInput, setEmailInput] = useState(false)
 	const [emailInputMessage, setEmailInputMessage] = useState('');
 	const [formData, setFormData] = useState(new FormData());
-	const [redirect, setRedirect] = useState(false)
 	const [user, setUser] = useState(null)
+	const history = useHistory();
 
 	const stateChange = async () => {
 		let emailInput = document.getElementById("email")
@@ -71,10 +71,11 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 					}
 			}).then(res => {
 				if (res.status === 200) {
-					setUser(res.data)
-					setRedirect(true)
+					console.log(res.data)
+					history.push('/home', { state: res.data });
 				} else {
 					setSignUpMessage("Sign Up Failed")
+					setTimeout(window.location.reload(), 3000);
 				}
 			  });			
 		}
@@ -82,14 +83,6 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 	register();	
 	}, [regFrame, setRegFrame, formData]);
 
-	if (redirect) {
-		return <Redirect
-					to={{
-					pathname: "/home",
-					state: { user: user}
-					}}
-				/>;
-	}
 	return (
 		<ThemeProvider theme={theme}>
 		<Container className={classes.container} >
@@ -131,16 +124,16 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 				>
 					<Grid container spacing={3}>
 						<Grid item xs={6} >
-							<TextField autoComplete='fname' name='first_name' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus onBlur={checkSubmitDisable} />
+							<TextField autoComplete='fname' name='first_name' variant='outlined' required fullWidth id='firstName' label='First Name' autoFocus onBlur={checkSubmitDisable} InputProps={{className: classes.text}} />
 						</Grid>
 						<Grid item xs={6}>
-							<TextField variant='outlined' required fullWidth id='lastName' label='Last Name' name='last_name' autoComplete='lname' onBlur={checkSubmitDisable} />
+							<TextField variant='outlined' required fullWidth id='lastName' label='Last Name' name='last_name' autoComplete='lname' onBlur={checkSubmitDisable} InputProps={{className: classes.text}}/>
 						</Grid>
 						<Grid item xs={12}>
-							<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' onBlur={stateChange} onChange={checkSubmitDisable} error={emailInput} helperText={emailInputMessage}/>
+							<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' onBlur={stateChange} onChange={checkSubmitDisable} error={emailInput} helperText={emailInputMessage} InputProps={{className: classes.text}}/>
 						</Grid>
 						<Grid item xs={12}>
-							<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' onChange={checkSubmitDisable} />
+							<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' onChange={checkSubmitDisable} InputProps={{className: classes.text}}/>
 						</Grid>
 					</Grid>
 					<Button fullWidth disabled={disableSubmit} variant='contained' className={classes.submit} type='submit'>

@@ -24,14 +24,23 @@ const useStyles = makeStyles((theme) => ({
 	},
 	backgroundDiv: {
 		gridArea: '1 / 2 / 4 / 3',
-		background: 'linear-gradient(125deg, #FE6B8B 30%, #FF8E53 90%)'
+		background: 'linear-gradient(to right top, #9b64a3, #9971b3, #957ec1, #918ace, #8c97da, #81a5e7, #75b2f1, #69bff8, #52cffe, #41dfff, #46eefa, #5ffbf1)',
 	},
 	avatar: {
 		gridArea: '1 / 1 / 2 / 2',
 		justifySelf: 'center',
 		alignSelf: 'center',
 		margin: theme.spacing(1),
-		backgroundColor: theme.palette.secondary.main	
+		backgroundColor: '#9b64a3',
+	},
+	avatarLogged: {
+		gridArea: '2 / 1 / 3 / 2',
+		justifySelf: 'center',
+		alignSelf: 'center',
+		margin: theme.spacing(1),
+		backgroundColor: '#9b64a3',
+		width: '200px',
+		height: '200px'	
 	},
 	form: {
 		gridArea: '2 / 2 / 4 / 3',
@@ -44,15 +53,16 @@ const useStyles = makeStyles((theme) => ({
 	submit: {
 		justifySelf: 'center',
 		alignSelf: 'center',
+		color: '#9b64a3',
+		backgroundColor: '#5FFBF1',
 		margin: theme.spacing(3, 0, 2),
 	},
 	box: {
 		gridArea: '2 / 1 / 3 / 2',
 		justifySelf: 'center',
 		alignSelf: 'center',
-		background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+		background: 'linear-gradient(to right top, #9b64a3, #9971b3, #957ec1, #918ace, #8c97da, #81a5e7, #75b2f1, #69bff8, #52cffe, #41dfff, #46eefa, #5ffbf1)',
 		border: 0,
-		boxShadow: '0 4px 8px 0 rgba(255, 105, 135, .7)',
 		color: 'white',
 		width: '250px',
 		height: '250px'
@@ -61,7 +71,6 @@ const useStyles = makeStyles((theme) => ({
 		justifySelf: 'center',
 		alignSelf: 'center',
 		gridArea: '3 / 1 / 4 / 2',
-		boxShadow: '0 4px 8px 0 rgba(255, 105, 135, .7)'
 	},
 	message: {
 		justifySelf: 'center',
@@ -69,9 +78,9 @@ const useStyles = makeStyles((theme) => ({
 		gridArea: '1 / 2 / 2 / 3',
 	},
 	text: {
-		fontColor: 'white',
-		borderColor: '#fff',
-		borderRadius: '100px'
+		color: '#fffdfa',
+		borderColor: '#fffdfa',
+
 	}
 }));
 
