@@ -20,6 +20,9 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 	const [signInMessage, setSignInMessage] = useState('Sign In')
 	const [logPass, setLogPass] = useState(false);
 	const [loginMethod, setLoginMethod] = useState("Face")
+	const [disableSubmit, setDisableSubmit] = useState(true)
+	const [emailInput, setEmailInput] = useState(false)
+	const [emailInputMessage, setEmailInputMessage] = useState('');
 	const history = useHistory();
 
 	const classes = useStyles();
@@ -40,7 +43,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 				console.log(value);
 			}
 			//#### TO REMOVE BEFORE DEPLOYING ####
-			await axios.post('http://localhost/login', formData, {
+			await axios.post('http://localhost:3010/login', formData, {
 				headers: {
 					'Content-Type': 'application/json',
 				},
@@ -61,6 +64,23 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 	login();
 	}, [loginFrame, setLoginFrame, formData]);
 
+	const stateChange = async () => {
+		let emailInput = document.getElementById("email")
+		const user = await axios.get('http://localhost:3010/list').then(res => {
+			const userEmail = res.data.find(user => user.email === emailInput.value);
+			if (userEmail) return userEmail
+		});
+		console.log(user)
+		if (user) {
+			setEmailInput(false);
+			setEmailInputMessage("Valid Email");
+			setDisableSubmit(false);
+		} else {
+			setEmailInput(true);
+			setEmailInputMessage("You are not registered yet.s");
+		}
+	}
+
 	async function loginWithPass() {
 		if (logPass) {
 			let email = document.querySelector('#email');
@@ -71,7 +91,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 			formData.append('password', password.value);
 			
 
-			await axios.post('http://localhost/login', formData, {
+			await axios.post('http://localhost:3010/login', formData, {
 				headers: {
 					'Content-Type': 'application/json',
 				},
@@ -129,10 +149,10 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 					}}
 				>
 					<Box>
-						<TextField variant='outlined' margin='normal' fullWidth id='email' label='Email Address' name='email' autoComplete='email' autoFocus InputProps={{ className: classes.text}} />
+						<TextField variant='outlined' required fullWidth id='email' label='Email Address' name='email' autoComplete='email' onBlur={stateChange} error={emailInput} helperText={emailInputMessage} InputProps={{className: classes.text}}/>
 					</Box>
 					{logPass ? (<TextField variant='outlined' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' InputProps={{className: classes.text}}/>) : null}
-					<Button type='submit' fullWidth variant='contained' color='primary' className={classes.submit}>
+					<Button type='submit' disabled={disableSubmit} fullWidth variant='contained' color='primary' className={classes.submit}>
 						Authenticate with {loginMethod}
 					</Button>
 					<Grid container>

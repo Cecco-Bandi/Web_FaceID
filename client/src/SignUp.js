@@ -26,7 +26,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 
 	const stateChange = async () => {
 		let emailInput = document.getElementById("email")
-		const user = await axios.get('http://localhost/list').then(res => {
+		const user = await axios.get('http://localhost:3010/list').then(res => {
 			const userEmail = res.data.find(user => user.email === emailInput.value);
 			if (userEmail) return userEmail
 		});
@@ -65,7 +65,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 			formData.append('regFrame', image_to_send);
 			setRegFrame(null);
 			
-			await axios.post('http://localhost:80/register', formData, {
+			await axios.post('http://localhost:3010/register', formData, {
 					headers: {
 						'Content-Type': 'application/json',
 					}

@@ -16,18 +16,18 @@ import api
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
+# import sentry_sdk
+# from sentry_sdk.integrations.flask import FlaskIntegration
 
-sentry_sdk.init(
-    dsn="https://d848d18badb1453bb53dbdbdafc69ad6@o971637.ingest.sentry.io/5924031",
-    integrations=[FlaskIntegration()],
+# sentry_sdk.init(
+#     dsn="https://d848d18badb1453bb53dbdbdafc69ad6@o971637.ingest.sentry.io/5924031",
+#     integrations=[FlaskIntegration()],
 
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=1.0
-)
+#     # Set traces_sample_rate to 1.0 to capture 100%
+#     # of transactions for performance monitoring.
+#     # We recommend adjusting this value in production.
+#     traces_sample_rate=1.0
+# )
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {
