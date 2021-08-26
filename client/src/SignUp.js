@@ -21,12 +21,11 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 	const [emailInput, setEmailInput] = useState(false)
 	const [emailInputMessage, setEmailInputMessage] = useState('');
 	const [formData, setFormData] = useState(new FormData());
-	const [user, setUser] = useState(null)
 	const history = useHistory();
 
 	const stateChange = async () => {
 		let emailInput = document.getElementById("email")
-		const user = await axios.get('http://localhost:3010/list').then(res => {
+		const user = await axios.get('api/list').then(res => {
 			const userEmail = res.data.find(user => user.email === emailInput.value);
 			if (userEmail) return userEmail
 		});
@@ -34,6 +33,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 		if (user) {
 			setEmailInput(true);
 			setEmailInputMessage("Email already in use");
+			setDisableSubmit(true);
 		} else {
 			setEmailInput(false);
 			setEmailInputMessage("Valid Email");
@@ -50,7 +50,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 
 	const checkSubmitDisable = () => {
 		const uniform = checkUniform();
-		if (uniform) setDisableSubmit(false)
+		if (uniform && disableSubmit) setDisableSubmit(false)
 		else setDisableSubmit(true);
 	}
 
@@ -65,7 +65,7 @@ export default function SignUp({ regFrame, setRegFrame, context, setContext }) {
 			formData.append('regFrame', image_to_send);
 			setRegFrame(null);
 			
-			await axios.post('http://localhost:3010/register', formData, {
+			await axios.post('api/register', formData, {
 					headers: {
 						'Content-Type': 'application/json',
 					}

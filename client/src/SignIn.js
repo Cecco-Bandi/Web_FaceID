@@ -43,7 +43,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 				console.log(value);
 			}
 			//#### TO REMOVE BEFORE DEPLOYING ####
-			await axios.post('http://localhost:3010/login', formData, {
+			await axios.post('api/login', formData, {
 				headers: {
 					'Content-Type': 'application/json',
 				},
@@ -66,7 +66,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 
 	const stateChange = async () => {
 		let emailInput = document.getElementById("email")
-		const user = await axios.get('http://localhost:3010/list').then(res => {
+		const user = await axios.get('api/list').then(res => {
 			const userEmail = res.data.find(user => user.email === emailInput.value);
 			if (userEmail) return userEmail
 		});
@@ -91,7 +91,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 			formData.append('password', password.value);
 			
 
-			await axios.post('http://localhost:3010/login', formData, {
+			await axios.post('api/login', formData, {
 				headers: {
 					'Content-Type': 'application/json',
 				},

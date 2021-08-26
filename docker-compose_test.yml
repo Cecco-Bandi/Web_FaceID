@@ -2,22 +2,16 @@ version: '3.9'
 
 services:
     web:
-        build:
-          context: ./client
-          dockerfile: Dockerfile-prod
+        build: ./client
         container_name: web
         ports:
-            - "80:80"
-            - "443:443"
+            - "3000:3000"
         restart: always
         stdin_open: true
         tty: true
         volumes:
-            - ./client/data/certs:/etc/nginx/certs
             - ./client:/app
             - /app/node_modules
-        depends_on: 
-            - server
         networks: 
             - frontend
             
@@ -41,7 +35,7 @@ services:
         build: ./server
         container_name: server
         ports:
-            - "3010:3010"
+            - "3010:5000"
         volumes:
             - ./server:/app 
         environment:
