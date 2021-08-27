@@ -151,7 +151,7 @@ export default function SignIn({loginFrame, setLoginFrame, context, setContext})
 					<Grid container>
 						<Grid item>
 							<Link href='SignUp' variant='body2'>
-								Already have an account? Sign Up
+								No account yet? Sign Up
 							</Link>
 						</Grid>
 					</Grid>
